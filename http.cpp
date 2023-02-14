@@ -21,6 +21,8 @@
 
 Options options{};
 
+static char curl_error_buf[CURL_ERROR_SIZE];
+
 static void curl_perform(CURL* curl) {
   int retries = 5;
   while(1) {
@@ -94,8 +96,6 @@ static void curl_log_result(CURL* curl) {
 #undef log_curl_info
 #undef curl_info
 }
-
-char curl_error_buf[CURL_ERROR_SIZE];
 
 /*
  * returns a prepared curl handle.
@@ -182,10 +182,10 @@ static CURL* curl_handle(int /*index*/) {
   return curl;
 }
 
-size_t http_ignore_data(char *ptr, size_t size, size_t nmemb, void *userdata)
-{ 
-  return size * nmemb; 
-}
+//size_t http_ignore_data(char *ptr, size_t size, size_t nmemb, void *userdata)
+//{ 
+//  return size * nmemb; 
+//}
 
 extern void http(int verb,
   const char*   url, 

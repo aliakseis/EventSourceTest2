@@ -35,10 +35,10 @@ void http(int  verb,
         curl_off_t ulnow) = nullptr
 );
 
-extern char curl_error_buf[];
+//extern char curl_error_buf[];
 
 //extern 
-size_t http_ignore_data(char *ptr, size_t size, size_t nmemb, void *userdata);
+//size_t http_ignore_data(char *ptr, size_t size, size_t nmemb, void *userdata);
 
 
 //#define DECLARE_OBJECT(T, name) extern struct T name
