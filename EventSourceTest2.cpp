@@ -1,20 +1,79 @@
 // EventSourceTest2.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-#include <iostream>
+#include "http.h"
 
-int main()
+#include <iostream>
+#include <string>
+#include <thread>
+#include <atomic>
+
+static size_t on_data(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
-    std::cout << "Hello World!\n";
+    //logger(2, ptr, size * nmemb, 0);
+    //parse_sse(ptr, size * nmemb);
+
+    std::string s(ptr, size * nmemb);
+
+    std::cout << __FUNCTION__ << ':' << s << std::endl;
+
+    return size * nmemb;
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
+static std::atomic_bool requestInterrupted = false;
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+static size_t progress_callback(void *clientp,
+    curl_off_t dltotal,
+    curl_off_t dlnow,
+    curl_off_t ultotal,
+    curl_off_t ulnow)
+{
+    return requestInterrupted;
+}
+
+static const char* verify_sse_response(CURL* curl) {
+#define EXPECTED_CONTENT_TYPE "text/event-stream"
+
+    static const char expected_content_type[] = EXPECTED_CONTENT_TYPE;
+
+    const char* content_type;
+    curl_easy_getinfo(curl, CURLINFO_CONTENT_TYPE, &content_type);
+    if (!content_type) content_type = "";
+
+    if (!strncmp(content_type, expected_content_type, strlen(expected_content_type)))
+        return 0;
+
+    return "Invalid content_type, should be '" EXPECTED_CONTENT_TYPE "'.";
+}
+
+using namespace std::chrono_literals;
+
+int main(int argc, char** argv)
+{
+    options.arg0 = *argv;
+
+    const char url[] = "https://ntfy.sh/eventSourceExample/sse";
+
+    static const char* headers[] = {
+        "Accept: text/event-stream",
+        NULL
+    };
+
+    std::thread th([url] {
+        http(HTTP_GET, url, headers, 0, 0, on_data, verify_sse_response, progress_callback);
+        });
+
+    std::this_thread::sleep_for(2000ms);
+
+    const char message[] = "Hi there!!!";
+
+    http(HTTP_POST, "https://ntfy.sh/eventSourceExample", nullptr, message, sizeof(message) - 1);
+
+    std::this_thread::sleep_for(2000ms);
+
+    requestInterrupted = true;
+
+    th.join();
+
+    return 0;
+}
