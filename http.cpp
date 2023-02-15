@@ -23,20 +23,20 @@ Options options{};
 
 static char curl_error_buf[CURL_ERROR_SIZE];
 
-static void curl_perform(CURL* curl) {
+static bool curl_perform(CURL* curl) {
   int retries = 5;
   while(1) {
     CURLcode res = curl_easy_perform(curl);
 
     switch(res) {
       case CURLE_OK: 
-        return;
+        return true;
       case CURLE_COULDNT_RESOLVE_PROXY:
       case CURLE_COULDNT_RESOLVE_HOST:
       case CURLE_COULDNT_CONNECT:
         fprintf(stderr, "curl: %s\n", curl_error_buf);
         if(retries-- <= 0) 
-          exit(1);
+          return false;
 
         fprintf(stderr, "retrying...\n");
         //sleep(3);
@@ -44,9 +44,11 @@ static void curl_perform(CURL* curl) {
         break;
       default:
         fprintf(stderr, "curl: %s\n", curl_error_buf);
-        exit(1);
+        return false;
     }
   }
+
+  return true;
 }
 
 static void curl_log_result(CURL* curl) {
@@ -206,7 +208,7 @@ static size_t progressCallback(void *clientp, // https://curl.se/libcurl/c/CURLO
         ulnow);
 }
 
-extern void http(HttpVerb verb,
+extern bool http(HttpVerb verb,
   const char*   url, 
   const char**  http_headers, 
   
@@ -280,7 +282,7 @@ extern void http(HttpVerb verb,
   
   // -- perform -------------------------------------------------------
   
-  curl_perform(curl);         /* Perform the request */ 
+  bool result = curl_perform(curl);         /* Perform the request */ 
 
   // -- log CURL result -----------------------------------------------
 
@@ -298,7 +300,7 @@ extern void http(HttpVerb verb,
       curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &effective_url); 
     
     fprintf(stderr, "%s: HTTP(S) status code %ld\n", effective_url, response_code);
-    exit(1);
+    result = false;
   }
 
   // -- verify response. exit if verification fails -------------------
@@ -309,7 +311,7 @@ extern void http(HttpVerb verb,
       curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &effective_url); 
 
     fprintf(stderr, "%s: %s\n", effective_url, verification_error);
-    exit(1);
+    result = false;
   }
   
   // -- cleanup -------------------------------------------------------
@@ -319,4 +321,6 @@ extern void http(HttpVerb verb,
 
   // We clean up.
   curl_easy_cleanup(curl);    /* cleanup */
+
+  return  result;
 }

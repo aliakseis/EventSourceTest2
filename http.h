@@ -27,7 +27,7 @@ typedef std::function<size_t(char*, size_t, size_t)> OnDataFunc;
 typedef std::function<size_t(curl_off_t, curl_off_t, curl_off_t, curl_off_t)> OnProgressFunc;
 
 //extern 
-void http(HttpVerb  verb,
+bool http(HttpVerb  verb,
   const char*   url, 
   const char**  http_headers, 
 

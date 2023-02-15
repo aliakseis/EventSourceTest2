@@ -21,9 +21,15 @@
     <ClCompile Include="http.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="json_parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="http.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="json_parser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
