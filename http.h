@@ -17,15 +17,17 @@
  * send HTTP request.
  */
 
-#define HTTP_GET  0
-#define HTTP_POST 1
+enum HttpVerb {
+    HTTP_GET = 0,
+    HTTP_POST = 1,
+};
 
 typedef std::function<size_t(char*, size_t, size_t)> OnDataFunc;
 
 typedef std::function<size_t(curl_off_t, curl_off_t, curl_off_t, curl_off_t)> OnProgressFunc;
 
 //extern 
-void http(int  verb,
+void http(HttpVerb  verb,
   const char*   url, 
   const char**  http_headers, 
 
