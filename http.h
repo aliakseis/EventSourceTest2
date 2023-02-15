@@ -11,12 +11,18 @@
 #include <string.h>
 #include <curl/curl.h>
 
+#include <functional>
+
 /*
  * send HTTP request.
  */
 
 #define HTTP_GET  0
 #define HTTP_POST 1
+
+typedef std::function<size_t(char*, size_t, size_t)> OnDataFunc;
+
+typedef std::function<size_t(curl_off_t, curl_off_t, curl_off_t, curl_off_t)> OnProgressFunc;
 
 //extern 
 void http(int  verb,
@@ -26,6 +32,11 @@ void http(int  verb,
   const char*   body, 
   unsigned      bodyLenght,
 
+  OnDataFunc    on_data = {},
+  std::function<const char*(CURL*)> on_verify = {},
+  OnProgressFunc progress_callback = {}
+
+/*
   size_t        (*on_data)(char *ptr, size_t size, size_t nmemb, void *userdata) = nullptr,
   const char*   (*on_verify)(CURL* curl) = nullptr,
   size_t        (*progress_callback)(void *clientp, // https://curl.se/libcurl/c/CURLOPT_XFERINFOFUNCTION.html
@@ -33,6 +44,7 @@ void http(int  verb,
         curl_off_t dlnow,
         curl_off_t ultotal,
         curl_off_t ulnow) = nullptr
+        */
 );
 
 //extern char curl_error_buf[];

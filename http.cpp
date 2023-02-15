@@ -187,6 +187,25 @@ static CURL* curl_handle(int /*index*/) {
 //  return size * nmemb; 
 //}
 
+static size_t onData(char *ptr, size_t size, size_t nmemb, void *userdata)
+{
+    OnDataFunc& onDataFunc = *static_cast<OnDataFunc*>(userdata);
+    return onDataFunc(ptr, size, nmemb);
+}
+
+static size_t progressCallback(void *clientp, // https://curl.se/libcurl/c/CURLOPT_XFERINFOFUNCTION.html
+    curl_off_t dltotal,
+    curl_off_t dlnow,
+    curl_off_t ultotal,
+    curl_off_t ulnow)
+{
+    OnProgressFunc& onProgressFunc = *static_cast<OnProgressFunc*>(clientp);
+    return onProgressFunc(dltotal,
+        dlnow,
+        ultotal,
+        ulnow);
+}
+
 extern void http(int verb,
   const char*   url, 
   const char**  http_headers, 
@@ -194,6 +213,11 @@ extern void http(int verb,
   const char*   body, 
   unsigned      bodyLenght,
   
+  OnDataFunc    on_data,
+  std::function<const char*(CURL*)> on_verify,
+  OnProgressFunc progress_callback
+
+/*
   size_t        (*on_data)(char *ptr, size_t size, size_t nmemb, void *userdata),
   const char*   (*on_verify)(CURL* curl),
   size_t        (*progress_callback)(void *clientp, // https://curl.se/libcurl/c/CURLOPT_XFERINFOFUNCTION.html
@@ -201,6 +225,7 @@ extern void http(int verb,
         curl_off_t dlnow,
         curl_off_t ultotal,
         curl_off_t ulnow)
+*/
 )
 {
   CURL *curl = curl_handle(verb);
@@ -242,12 +267,16 @@ extern void http(int verb,
   
   // -- set write function --------------------------------------------
   
-  if(on_data)
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, on_data);
+  if (on_data) {
+      curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, onData);
+      curl_easy_setopt(curl, CURLOPT_WRITEDATA, static_cast<void*>(&on_data));
+  }
 
-  curl_easy_setopt(curl, CURLOPT_NOPROGRESS, progress_callback == nullptr);
-  if (progress_callback)
-    curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, progress_callback);
+  curl_easy_setopt(curl, CURLOPT_NOPROGRESS, !progress_callback);
+  if (progress_callback) {
+      curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, progressCallback);
+      curl_easy_setopt(curl, CURLOPT_XFERINFODATA, static_cast<void*>(&progress_callback));
+  }
   
   // -- perform -------------------------------------------------------
   

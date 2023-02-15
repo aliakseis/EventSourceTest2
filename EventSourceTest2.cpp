@@ -8,21 +8,21 @@
 #include <thread>
 #include <atomic>
 
-static size_t on_data(char *ptr, size_t size, size_t nmemb, void *userdata)
+static size_t on_data(char *ptr, size_t size, size_t nmemb/*, void *userdata*/)
 {
     //logger(2, ptr, size * nmemb, 0);
     //parse_sse(ptr, size * nmemb);
 
     std::string s(ptr, size * nmemb);
 
-    std::cout << __FUNCTION__ << ':' << s << std::endl;
+    std::cout << "*** Start of data ***\n" << s << "\n*** End of data ***" << std::endl;
 
     return size * nmemb;
 }
 
 static std::atomic_bool requestInterrupted = false;
 
-static size_t progress_callback(void *clientp,
+static size_t progress_callback(//void *clientp,
     curl_off_t dltotal,
     curl_off_t dlnow,
     curl_off_t ultotal,
