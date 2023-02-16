@@ -15,7 +15,7 @@
 #define SSE_CLIENT_VERSION       "0.2"
 #define SSE_CLIENT_USERAGENT     "sse/" SSE_CLIENT_VERSION
 
-#define die(msg) do { perror(msg); exit(1); } while(0)
+//#define die(msg) do { perror(msg); exit(1); } while(0)
 
 //DEFINE_OBJECT(Options, options);
 
@@ -29,7 +29,8 @@ static bool curl_perform(CURL* curl) {
     CURLcode res = curl_easy_perform(curl);
 
     switch(res) {
-      case CURLE_OK: 
+      case CURLE_OK:
+      case CURLE_ABORTED_BY_CALLBACK:
         return true;
       case CURLE_COULDNT_RESOLVE_PROXY:
       case CURLE_COULDNT_RESOLVE_HOST:
@@ -130,7 +131,8 @@ static CURL* curl_handle(int /*index*/) {
 
   CURL* curl = curl_easy_init();
   if (!curl)
-      die("curl");
+      return nullptr;
+      //die("curl");
 
   /* === verbosity? ================================================ */
 
@@ -231,6 +233,8 @@ extern bool http(HttpVerb verb,
 )
 {
   CURL *curl = curl_handle(verb);
+  if (!curl)
+      return false;
 
   // -- set URL -------------------------------------------------------
   
