@@ -52,7 +52,7 @@ static const char* verify_sse_response(CURL* curl) {
 
 
 
-auto getRemoteEcho()
+static auto getRemoteEcho()
 {
     std::promise<bool> startedPromise;
     std::promise<std::string> responsePromise;
@@ -73,7 +73,6 @@ auto getRemoteEcho()
         };
 
         bool requestInterrupted = false;
-        //int interruptedCount = 1;
 
         auto on_data = [&startedPromise, &responsePromise, &requestInterrupted](char *ptr, size_t size, size_t nmemb)->size_t {
             try {
@@ -114,17 +113,11 @@ auto getRemoteEcho()
             return size * nmemb;
         };
 
-        auto progress_callback = [&requestInterrupted/*, &interruptedCount*/](curl_off_t dltotal,
+        auto progress_callback = [&requestInterrupted](curl_off_t dltotal,
             curl_off_t dlnow,
             curl_off_t ultotal,
             curl_off_t ulnow)->size_t {
                 return requestInterrupted;
-                //if (!requestInterrupted)
-                //    return 0;
-                //if (interruptedCount == 0)
-                //    return 1;
-                //--interruptedCount;
-                //return 0;
         };
 
 
