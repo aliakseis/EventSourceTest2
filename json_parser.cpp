@@ -117,7 +117,6 @@ class JsonParser
 {
 public:
     JsonParser(std::istream& input);
-    ~JsonParser();
 
     std::any parse(bool skipError = false);
 
@@ -144,10 +143,6 @@ private:
 
 JsonParser::JsonParser(std::istream& input)
     : m_input(input)
-{
-}
-
-JsonParser::~JsonParser()
 {
 }
 
