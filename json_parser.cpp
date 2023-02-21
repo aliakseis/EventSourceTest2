@@ -283,16 +283,7 @@ bool JsonParser::parseNumber(std::any& result)
             m_input.clear();
             return false;
         }
-        int intValue;
-        if (value >= INT_MIN && value <= INT_MAX
-            && ((intValue = static_cast<int>(value)) == value))
-        {
-            result = intValue;
-        }
-        else
-        {
-            result = value;
-        }
+        result = value;
     }
     catch (const std::exception&)
     {
