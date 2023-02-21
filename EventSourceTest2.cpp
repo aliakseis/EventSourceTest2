@@ -10,30 +10,6 @@
 #include <atomic>
 #include <future>
 
-/*
-static size_t on_data(char *ptr, size_t size, size_t nmemb)
-{
-    //logger(2, ptr, size * nmemb, 0);
-    //parse_sse(ptr, size * nmemb);
-
-    std::string s(ptr, size * nmemb);
-
-    std::cout << "*** Start of data ***\n" << s << "\n*** End of data ***" << std::endl;
-
-    return size * nmemb;
-}
-
-static std::atomic_bool requestInterrupted = false;
-
-static size_t progress_callback(//void *clientp,
-    curl_off_t dltotal,
-    curl_off_t dlnow,
-    curl_off_t ultotal,
-    curl_off_t ulnow)
-{
-    return requestInterrupted;
-}
-*/
 
 static const char* verify_sse_response(CURL* curl) {
 #define EXPECTED_CONTENT_TYPE "text/event-stream"
@@ -138,19 +114,6 @@ int main(int argc, char** argv)
 {
     options.arg0 = *argv;
 
-    //const char url[] = "https://ntfy.sh/eventSourceExample/sse";
-
-    //static const char* headers[] = {
-    //    "Accept: text/event-stream",
-    //    NULL
-    //};
-
-    //std::thread th([url] {
-    //    http(HTTP_GET, url, headers, 0, 0, on_data, verify_sse_response, progress_callback);
-    //    });
-
-    //std::this_thread::sleep_for(2000ms);
-
     auto[startedResult, responseResult] = getRemoteEcho();
 
     if (!startedResult.get()) {
@@ -162,18 +125,9 @@ int main(int argc, char** argv)
 
     http(HTTP_POST, "https://ntfy.sh/eventSourceExample", nullptr, message, sizeof(message) - 1);
 
-
     auto response = responseResult.get();
 
-    //std::this_thread::sleep_for(50ms);
-
     std::cout << "Response: " << response << std::endl;
-
-    //std::this_thread::sleep_for(2000ms);
-
-    //requestInterrupted = true;
-
-    //th.join();
 
     return 0;
 }
